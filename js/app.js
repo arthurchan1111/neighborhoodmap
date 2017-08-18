@@ -81,7 +81,7 @@ function getFarms(lat, long, callback){
 function getDetails(id, name,length, callback){
 
   for (var i =0; i<id.length; i++){
-  (function(i){ $.ajax({
+    (function(i){ $.ajax({
       type: "GET",
       contentType: "application/json; charset=utf-8",
       // submit a get request to the restful service mktDetail.
@@ -151,10 +151,7 @@ function getDetails(id, name,length, callback){
                 self.marker.visiblestatus= ko.observable(true);
                 array.push(self.marker);
                 bounds.extend(self.marker.position);
-                 self.marker.addListener('click',  function(){
-
-                  populateInfoWindow(this, infowindow);
-                });
+                self.marker.addListener('click', makeInfowindowListener);
 
                 self.marker.addListener('click', toggleBounce);
 
@@ -166,16 +163,18 @@ function getDetails(id, name,length, callback){
           });
         });
     }
-
+function makeInfowindowListener(){
+  populateInfoWindow(this, infowindow);
+}
           function populateInfoWindow(marker, infowindow,schedule,address,product){
               if (infowindow.marker != marker){
                 infowindow.marker  = marker;
                 var content='<div>' + marker.title + '</div>'+
                                        '<hr>'+
                                         '<div><p><strong>Address: </strong>'+ marker.address +
-                                        '<br><br><strong>Products: </strong>'+ marker.product
-                                        + '<br><br><strong>Schedule: </strong>'+
-                                        marker.schedule+'<br></p></div>';
+                                        '<br><br><strong>Products: </strong>'+ marker.product +
+                                        '<br><br><strong>Schedule: </strong>'+
+                                        marker.schedule + '<br></p></div>';
                 infowindow.setContent(content);
                 infowindow.open(map,marker);
                 infowindow.addListener('closeclick', function(){
@@ -226,7 +225,7 @@ function toggleBounce(){
                 self.locations.push(locationlist[i]);
                 }
 
-                return self.locations()
+                return self.locations();
         });
 
       }, function(){
@@ -235,10 +234,10 @@ function toggleBounce(){
                 self.locations.push(locationlist[i]);
                 }
 
-                return self.locations()
+                return self.locations();
         });
 
-      })
+      });
     }
       else{
         getResults(40.785091,-73.968285, markers,function(locationlist){
@@ -246,10 +245,10 @@ function toggleBounce(){
                 self.locations.push(locationlist[i]);
                 }
 
-                return self.locations()
+                return self.locations();
         });
       }
-        return self.locations()
+        return self.locations();
     },this);
 
       this.queryData = ko.pureComputed({
@@ -282,7 +281,7 @@ function toggleBounce(){
         };
 
 
-  }
+  };
 
 
 var viewmodel = new ViewModel();
