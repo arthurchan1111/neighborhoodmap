@@ -40,7 +40,7 @@ function getFarms(lat, long, callback){
   $.ajax({
         type: "GET",
         contentType: "application/json; charset=utf-8",
-         url: "http://search.ams.usda.gov/farmersmarkets/v1/data.svc/locSearch?lat=" + self.lat + "&lng=" + self.long,
+         url: "https://search.ams.usda.gov/farmersmarkets/v1/data.svc/locSearch?lat=" + self.lat + "&lng=" + self.long,
         dataType: 'jsonp',
         //jsonpCallback: 'searchResultsHandler',
         success: function(searchResults){
@@ -85,7 +85,7 @@ function getDetails(id, name,length, callback){
       type: "GET",
       contentType: "application/json; charset=utf-8",
       // submit a get request to the restful service mktDetail.
-      url: "http://search.ams.usda.gov/farmersmarkets/v1/data.svc/mktDetail?id=" + id[i],
+      url: "https://search.ams.usda.gov/farmersmarkets/v1/data.svc/mktDetail?id=" + id[i],
       dataType: 'jsonp',
       success: function(data){
 
