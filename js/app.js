@@ -6,6 +6,7 @@ var details = {};
 var temp=[];
 var markers =[];
 
+
 /**
 * @description Callback function for google maps api to load the map
 */
@@ -45,7 +46,7 @@ function getFarms(lat, long, callback){
         //jsonpCallback: 'searchResultsHandler',
         success: function(searchResults){
           var ids = [];
-          var name= [];
+
           var length= searchResults.results.length;
 
             var results;
@@ -54,13 +55,11 @@ function getFarms(lat, long, callback){
     }
 
       for(var i=0; i<results.length; i++){
-        var marketname= results[i].marketname;
-        var indexofdecimal= results[i].marketname.indexOf(".") + 2;
-        var newname=  results[i].marketname.substring(indexofdecimal);
+
         ids.push(results[i].id);
-        name.push(newname);
+
       }
-        callback(ids,name, length);
+        callback(ids,length);
     },
     error: function(message){
       alert("Could not retrieve any farmers markets within your area");
@@ -78,45 +77,53 @@ function getFarms(lat, long, callback){
 * @param {Function} callback (temp): called after calculation
 *
 */
-function getDetails(id, name,length, callback){
-
+function getDetails(id,length, callback){
+ var namearray= name;
   for (var i =0; i<id.length; i++){
-    (function(i){ $.ajax({
-      type: "GET",
-      contentType: "application/json; charset=utf-8",
-      // submit a get request to the restful service mktDetail.
-      url: "https://search.ams.usda.gov/farmersmarkets/v1/data.svc/mktDetail?id=" + id[i],
-      dataType: 'jsonp',
-      success: function(data){
+    $.ajax({
+    type: "GET",
+    contentType: "application/json; charset=utf-8",
+    // submit a get request to the restful service mktDetail.
+    url: "https://search.ams.usda.gov/farmersmarkets/v1/data.svc/mktDetail?id=" + id[i],
+    dataType: 'jsonp',
+    success: function(data){
+        var namestringfirstindex= data.marketdetails.GoogleLink.indexOf("\(");
+        var namestringlastindex=  data.marketdetails.GoogleLink.lastIndexOf("\)");
+        var namearray= data.marketdetails.GoogleLink.slice(namestringfirstindex+4,namestringlastindex-3).split("+");
+        var name = namearray.join(" ");
+        console.log(name);
+        var string= data.marketdetails.GoogleLink.slice(26,data.marketdetails.GoogleLink.indexOf("\(")-3);
+        var pos = string.split("%2C%20");
+        var indexoftags= String(data.marketdetails.Schedule).indexOf(";");
+        var parsedschedule= String(data.marketdetails.Schedule).slice(0,indexoftags);
 
-          var string= data.marketdetails.GoogleLink.slice(26,data.marketdetails.GoogleLink.indexOf("\(")-3);
-          var pos = string.split("%2C%20");
-          var indexoftags= String(data.marketdetails.Schedule).indexOf(";");
-          var parsedschedule= String(data.marketdetails.Schedule).slice(0,indexoftags);
+        details={"name":name,
+                        "address": data.marketdetails.Address,
+                        "schedule": parsedschedule,
+                        "products": data.marketdetails.Products,
+                        "latitude": pos[0],
+                        "longitude": pos[1]
+                      };
 
-          details={"name":name[i],
-                          "address": data.marketdetails.Address,
-                          "schedule": parsedschedule,
-                          "products": data.marketdetails.Products,
-                          "latitude": pos[0],
-                          "longitude": pos[1]
-                        };
-                temp.push(details);
-                if(temp.length == length){
-                  return callback(temp);
-                }
+                      temp.push(details);
+                       if(temp.length == length){
+                         return callback(temp);
+                       }
 
 
-      },
-      error: function(message){
-        alert("Could not data about the farmers market");
-      }
+    },
+    error: function(message){
+      alert("Could not data about the farmers market");
+    }
 
-    });
+  });
 
-  })(i);
+
 }
+
+
 }
+
 /**
 * @description The getResults function gets the callback from both previous functions
 *              and initializes the markers and infowindow onto the google map
@@ -128,8 +135,8 @@ function getDetails(id, name,length, callback){
 */
 
   function  getResults(lat, lng, array, callback){
-    getFarms(lat,lng,function(id,name,length){
-      getDetails(id,name,length,function(locations){
+    getFarms(lat,lng,function(id,length){
+      getDetails(id,length,function(locations){
              for (var i=0; i<locations.length; i++){
 
                 this.latlng= new google.maps.LatLng(parseFloat(locations[i].latitude),parseFloat(locations[i].longitude));
