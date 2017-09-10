@@ -66,7 +66,7 @@ function getFarms(lat, long, callback){
         "latitude": data[i].latitude,
         "phone": formattedphone,
         "link": data[i].market_link
-      }
+      };
       temp.push(details);
       if(temp.length === data.length){
 
@@ -228,7 +228,7 @@ function toggleBounce(){
         };
         self.closetab = function(){
            $("#resultlist").css({"width": 0});
-        }
+        };
         self.opentab = function(){
            if (window.screen.availWidth > 700){
               $("#resultlist").css({"width": 40+"%"});
@@ -236,7 +236,7 @@ function toggleBounce(){
            else{
              $("#resultlist").css({"width": 50+"%"});
            }
-        }
+        };
 
   };
 
