@@ -1,5 +1,5 @@
 # Neighborhood Map Project
-This web application is an interactive map that displays farmers markets using browser location data
+This web application is an interactive map that displays farmers markets around Central Park
 
 # Installation
 Clone the Github Repository
@@ -12,6 +12,6 @@ Or you can view the site [here](https://arthurchan1111.github.io/neighborhoodmap
 
 # API Attributions
 
-[USDA Farmers Market API](https://search.ams.usda.gov/farmersmarkets/v1/svcdesc.html)
+[New York Farmers Market API](https://dev.socrata.com/foundry/data.ny.gov/7jkw-gj56)
 
 [Google Maps API](https://developers.google.com/maps/)

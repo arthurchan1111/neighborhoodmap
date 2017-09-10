@@ -16,13 +16,17 @@ function initMap(){
   map = new google.maps.Map(document.getElementById('map'),{
   center: {lat: 40.785091, lng: -73.968285},
   zoom: 10,
-  mapTypeControl: false
+  mapTypeControl: false,
+  fullscreenControl: false
   });
   infowindow=  new google.maps.InfoWindow();
  bounds = new google.maps.LatLngBounds();
   var controls = document.getElementById('maptools');
-  map.controls[google.maps.ControlPosition.TOP_LEFT].push(controls);
-
+  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(controls);
+  var mapvenues= document.getElementById('resultlist');
+  map.controls[google.maps.ControlPosition.LEFT_CENTER].push(mapvenues);
+  var hamburger= document.getElementById('openresult');
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(hamburger);
 }
 
 /**
@@ -38,88 +42,42 @@ function getFarms(lat, long, callback){
   var self = this;
   self.lat = lat;
   self.long = long;
+
   $.ajax({
-        type: "GET",
-        contentType: "application/json; charset=utf-8",
-         url: "https://search.ams.usda.gov/farmersmarkets/v1/data.svc/locSearch?lat=" + self.lat + "&lng=" + self.long,
-        dataType: 'jsonp',
-        //jsonpCallback: 'searchResultsHandler',
-        success: function(searchResults){
-          var ids = [];
-
-          var length= searchResults.results.length;
-
-            var results;
-      for (var key in searchResults){
-        results = searchResults[key];
-    }
-
-      for(var i=0; i<results.length; i++){
-
-        ids.push(results[i].id);
-
+      url: "https://data.ny.gov/resource/7jkw-gj56.json?$where=within_circle(location_points," +self.lat+","+ self.long+", 3000)",//+self.long, //+"&latitude="+ self.lat,
+      type: "GET",
+      data: {
+        "$limit" : 500,
+        "$$app_token" : "5lcqVZyuM92WN1xW2rPjFfsNv"
       }
-        callback(ids,length);
-    },
-    error: function(message){
-      alert("Could not retrieve any farmers markets within your area");
+  }).done(function(data) {
+
+    for (var i=0; i<data.length; i++){
+      var phonenum= data[i].phone;
+      var areacode ="("+ phonenum.slice(0,3)+")";
+      var formattedphone= areacode+" "+ phonenum.slice(3,6)+"-"+phonenum.slice(6,10);
+
+      details={
+        "name": data[i].market_name,
+        "address": data[i].address_line_1,
+        "schedule": data[i].operation_hours,
+        "schedule_season": data[i].operation_season,
+       "longitude": data[i].longitude,
+        "latitude": data[i].latitude,
+        "phone": formattedphone,
+        "link": data[i].market_link
+      }
+      temp.push(details);
+      if(temp.length === data.length){
+
+        callback(temp);
+      }
     }
 
-});
-}
-/**
-* @description The getDetails function takes the name and id array and iteratively used
-*              to get market information of each farmer market. The final array is then called
-*              back.
-* @param {Object} id Array that contains id of farms
-* @param {Object} name Array that contains name of the farms
-* @param {Int} length Length of how many farms there are
-* @param {Function} callback (temp): called after calculation
-*
-*/
-function getDetails(id,length, callback){
- var namearray= name;
-  for (var i =0; i<id.length; i++){
-    $.ajax({
-    type: "GET",
-    contentType: "application/json; charset=utf-8",
-    // submit a get request to the restful service mktDetail.
-    url: "https://search.ams.usda.gov/farmersmarkets/v1/data.svc/mktDetail?id=" + id[i],
-    dataType: 'jsonp',
-    success: function(data){
-        var namestringfirstindex= data.marketdetails.GoogleLink.indexOf("\(");
-        var namestringlastindex=  data.marketdetails.GoogleLink.lastIndexOf("\)");
-        var namearray= data.marketdetails.GoogleLink.slice(namestringfirstindex+4,namestringlastindex-3).split("+");
-        var name = namearray.join(" ");
-        console.log(name);
-        var string= data.marketdetails.GoogleLink.slice(26,data.marketdetails.GoogleLink.indexOf("\(")-3);
-        var pos = string.split("%2C%20");
-        var indexoftags= String(data.marketdetails.Schedule).indexOf(";");
-        var parsedschedule= String(data.marketdetails.Schedule).slice(0,indexoftags);
-
-        details={"name":name,
-                        "address": data.marketdetails.Address,
-                        "schedule": parsedschedule,
-                        "products": data.marketdetails.Products,
-                        "latitude": pos[0],
-                        "longitude": pos[1]
-                      };
-
-                      temp.push(details);
-                       if(temp.length == length){
-                         return callback(temp);
-                       }
-
-
-    },
-    error: function(message){
-      alert("Could not data about the farmers market");
-    }
-
+  }).fail(function(status){
+    alert("Could not find data in this area");
   });
 
-
-}
 
 
 }
@@ -135,57 +93,66 @@ function getDetails(id,length, callback){
 */
 
   function  getResults(lat, lng, array, callback){
-    getFarms(lat,lng,function(id,length){
-      getDetails(id,length,function(locations){
-             for (var i=0; i<locations.length; i++){
+    getFarms(lat,lng,function(result){
 
-                this.latlng= new google.maps.LatLng(parseFloat(locations[i].latitude),parseFloat(locations[i].longitude));
-                this.title= locations[i].name;
-                this.schedule= locations[i].schedule;
-                this.address= locations[i].address;
 
-                this.product= locations[i].products;
-                self.marker= new google.maps.Marker({
-                  map: map,
-                  position: latlng,
-                  title: title,
-                  animation: google.maps.Animation.DROP,
-                  id:i
-                });
-                self.marker.address= this.address;
-                self.marker.product= this.product;
-                self.marker.schedule= this.schedule;
-                self.marker.visiblestatus= ko.observable(true);
-                array.push(self.marker);
-                bounds.extend(self.marker.position);
-                self.marker.addListener('click', makeInfowindowListener);
+        for(var i=0 ; i<result.length; i++){
+          this.latlng= new google.maps.LatLng(parseFloat(result[i].latitude),parseFloat(result[i].longitude));
+           this.title= result[i].name;
+           this.schedule= result[i].schedule;
+           this.address= result[i].address;
+           this.link = result[i].link;
+           this.operation_season= result[i].schedule_season;
+           this.phone= result[i].phone;
+           self.marker= new google.maps.Marker({
+             map: map,
+             position: latlng,
+             title: title,
+             animation: google.maps.Animation.DROP,
+             id:i
+           });
+           self.marker.address= this.address;
+           self.marker.season= this.operation_season;
+           self.marker.link=this.link;
+          self.marker.phone = this.phone;
+           self.marker.schedule= this.schedule;
+           self.marker.visiblestatus= ko.observable(true);
+           array.push(self.marker);
+           bounds.extend(self.marker.position);
+           self.marker.addListener('click', makeInfowindowListener);
 
-                self.marker.addListener('click', toggleBounce);
+           self.marker.addListener('click', toggleBounce);
 
-              }
+         }
 
-              map.fitBounds(bounds);
-              callback (markers);
+         map.fitBounds(bounds);
+         callback (markers);
 
-          });
-        });
-    }
+
+
+
+
+      });
+
+      }
+
 function makeInfowindowListener(){
   populateInfoWindow(this, infowindow);
 }
-          function populateInfoWindow(marker, infowindow,schedule,address,product){
+          function populateInfoWindow(marker, infowindow,schedule,address){
               if (infowindow.marker != marker){
                 infowindow.marker  = marker;
-                var content='<div>' + marker.title + '</div>'+
+                var content='<div><strong class="text-center">' + marker.title + '</strong></div>'+
                                        '<hr>'+
                                         '<div><p><strong>Address: </strong>'+ marker.address +
-                                        '<br><br><strong>Products: </strong>'+ marker.product +
-                                        '<br><br><strong>Schedule: </strong>'+
-                                        marker.schedule + '<br></p></div>';
+                                        '<br><br><strong>Phone: </strong>'+ marker.phone +
+                                        '<br><br><strong>Months of Operation: </strong>'+
+                                        marker.season +"<br><br><strong>Hours: </strong>"+ marker.schedule +
+                                        '<br><br><strong>Link: </strong><a href='+ marker.link+'>'+marker.link+'</a><br></p></div>';
                 infowindow.setContent(content);
                 infowindow.open(map,marker);
                 infowindow.addListener('closeclick', function(){
-                  //infowindow.setContent(null);
+
                   infowindow.setMarker=null;
                   marker.setAnimation(null);
                 });
@@ -217,55 +184,28 @@ function toggleBounce(){
 *              declines.
 */
     self.marketdata = ko.computed(function(){
-      if(navigator.geolocation){
 
-        navigator.geolocation.getCurrentPosition(function(position){
-        var pos={
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
+      getResults(40.785091,-73.968285, markers, function(locationlist){
+          for(var i =0; i<locationlist.length; i++){
+              self.locations.push(locationlist[i]);
+              }
 
-        map.setCenter(pos);
-        map.setZoom(10);
-        getResults(position.coords.latitude, position.coords.longitude, markers, function(locationlist){
-            for(var i =0; i<locationlist.length; i++){
-                self.locations.push(locationlist[i]);
-                }
-
-                return self.locations();
-        });
-
-      }, function(){
-        getResults(40.785091,-73.968285, markers, function(locationlist){
-            for(var i =0; i<locationlist.length; i++){
-                self.locations.push(locationlist[i]);
-                }
-
-                return self.locations();
-        });
-
+              return self.locations();
       });
-    }
-      else{
-        getResults(40.785091,-73.968285, markers,function(locationlist){
-            for(var i =0; i<locationlist.length; i++){
-                self.locations.push(locationlist[i]);
-                }
 
-                return self.locations();
-        });
-      }
+
+
         return self.locations();
     },this);
 
       this.queryData = ko.pureComputed({
             read: self.query,
             write: function (value) {
-              console.log(value);
+
               var lowercase = value.toLowerCase();
               var filteredfarms = [];
               for(var i =0; i<self.marketdata().length; i++){
-                  if(self.marketdata()[i].title.toLowerCase().search(lowercase)>=0 || self.marketdata()[i].product.toLowerCase().search(lowercase)>=0){
+                  if(self.marketdata()[i].title.toLowerCase().search(lowercase)>=0){
                       self.marketdata()[i].setMap(map);
                       self.marketdata()[i].visiblestatus(true);
 
@@ -282,11 +222,21 @@ function toggleBounce(){
         });
         self.openWindow= function(){
 
-            populateInfoWindow(this,infowindow,this.schedule, this.address, this.product);
+            populateInfoWindow(this,infowindow,this.schedule, this.address);
 
 
         };
-
+        self.closetab = function(){
+           $("#resultlist").css({"width": 0});
+        }
+        self.opentab = function(){
+           if (window.screen.availWidth > 700){
+              $("#resultlist").css({"width": 40+"%"});
+           }
+           else{
+             $("#resultlist").css({"width": 50+"%"});
+           }
+        }
 
   };
 

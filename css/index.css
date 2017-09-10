@@ -1,15 +1,84 @@
-@media screen and (min-width: 600px){
-  .form-control{
-    width: 200%;
-  }
-
+@media screen and (max-width: 320px) {
+    #openresult {
+        margin-top: 13%;
+    }
 }
+
+@media screen and (min-width: 320px) and (max-width: 400px) {
+    #openresult {
+        margin-top: 12%;
+    }
+    .form-control {
+        width: 70%;
+        margin-left: 30%;
+    }
+}
+
+@media screen and (min-width: 375px) and (max-width: 450px) {
+    #openresult {
+        margin-top: 9%;
+    }
+}
+
+@media screen and (min-width: 450px) and (max-width: 600px) {
+    #openresult {
+        margin-top: 7%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    #resultlist {
+        width: 50%;
+    }
+    ul {
+        margin-top: 10%;
+    }
+}
+
+@media screen and (min-width: 600px) and (max-width: 900px) {
+    #openresult {
+        margin-top: 5%;
+    }
+}
+
+@media screen and (min-width: 500px) {
+    .form-control {
+        margin-left: -10%;
+    }
+}
+
+@media screen and (min-width: 600px) and (max-width: 700px) {
+    ul {
+        margin-top: 5%;
+    }
+    .form-control {
+        margin-left: -10%;
+    }
+}
+
+@media screen and (min-width: 700px) {
+    .form-control {
+        margin-left: -10%;
+    }
+    #resultlist {
+        width: 40%;
+    }
+    ul {
+        margin-top: 5%;
+    }
+}
+
+@media screen and (min-width: 900px) {
+    #openresult {
+        margin-top: 4%;
+    }
+}
+
 * {
     box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
     height: 100%;
     margin: 0;
     padding: 0;
@@ -19,8 +88,41 @@ body {
     height: 100%;
 }
 
-.form-control{
+#maptools {}
 
-  margin-top: 15%;
-  margin-left: 15%;
+ul {
+    list-style-type: none;
+    overflow-y: auto;
+    text-decoration: none;
+}
+
+#resultlist {
+    background-color: #fff;
+    height: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+    transition: 0.5s;
+}
+
+#openresult {
+    margin-left: 5%;
+    background-color: transparent;
+    border: none;
+    position: absolute;
+}
+
+.close {
+    float: none;
+    margin-left: 97%;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+.form-control {
+    margin-top: 15%;
 }
