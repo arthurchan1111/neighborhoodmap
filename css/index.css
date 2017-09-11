@@ -27,9 +27,7 @@
 }
 
 @media screen and (max-width: 600px) {
-    #resultlist {
-        width: 50%;
-    }
+
     ul {
         margin-top: 10%;
     }
@@ -60,9 +58,7 @@
     .form-control {
         margin-left: -10%;
     }
-    #resultlist {
-        width: 40%;
-    }
+
     ul {
         margin-top: 5%;
     }
@@ -102,12 +98,14 @@ ul {
 }
 
 #resultlist {
+    width: 50%;
     background-color: #fff;
     height: 100%;
     z-index: 1;
     overflow-x: hidden;
     transition: 0.5s;
 }
+
 
 #openresult {
     margin-left: 5%;
